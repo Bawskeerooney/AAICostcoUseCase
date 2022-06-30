@@ -101,8 +101,7 @@ class AutoAnnotator(object):
         if self.annotations_path is None:
             raise FileNotFoundError('Annotations directory does not exist')
         zip_file = zipfile.ZipFile(f'{dataset_name}_dataset.zip', 'w')
-        for dir_ in [os.path.sep.join(self.image_sets_path.split(os.path.sep)[1:]),
-                     os.path.basename(self.annotations_path)]:
+        for dir_ in [self.image_sets_path,self.images_path,self.annotations_path]:
             for root, dirs, files in os.walk(dir_):
                 for file in files:
                     zip_file.write(os.path.join(root, file))

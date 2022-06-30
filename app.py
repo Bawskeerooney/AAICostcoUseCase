@@ -68,6 +68,7 @@ def stop_writing():
     print('stop signal received')
     controller.stop_writer()
     controller.complete_annotations()
+    controller.update_text('Data Collection Stopped')
     socketio.sleep(0.01)
 
 
@@ -369,7 +370,7 @@ class CVClient(eventlet_threading.Thread):
         self.all_frames = deque()
         self.video_frames = deque()
         self.dataset_name = "annotated_data"
-        self.auto_annotator = AutoAnnotator(confidence_level=0.5, overlap_threshold=0.3, labels=['person', 'hand'], markup_image=False)
+        self.auto_annotator = AutoAnnotator(confidence_level=0.5, overlap_threshold=0.3, labels=['car'], markup_image=False)
         super().__init__()
 
     def setup(self):
@@ -476,7 +477,7 @@ class CVClient(eventlet_threading.Thread):
             self.all_frames.append(frame)
             if self.writer.write == True:
                 self.video_frames.append(ogframe)
-                frame2 = deepcopy(frame)
+                frame2 = deepcopy(ogframe)
                 (annotation_xml, frame2, image_name, annotationText) = self.auto_annotator.annotate(frame2, results.predictions)
                 self.auto_annotator.write_image(annotation_xml, frame2, image_name)
                 start = time.time()
