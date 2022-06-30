@@ -1,0 +1,8 @@
+.DS_Store
+alwaysai.project.json
+alwaysai.target.json
+venv/
+annotated_data/
+models/
+__pycache__/
+.git/

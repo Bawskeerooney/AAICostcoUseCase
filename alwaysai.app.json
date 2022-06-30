@@ -1,0 +1,13 @@
+{
+  "models": {
+    "alwaysai/yolo_v3": 4
+  },
+  "scripts": {
+    "start": "python app.py"
+  },
+
+  "analytics": {
+    "enable_cloud_publish": true,
+    "file_size_bytes": 1000000
+  }
+}
