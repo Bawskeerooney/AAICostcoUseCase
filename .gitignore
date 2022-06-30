@@ -6,3 +6,4 @@ annotated_data/
 models/
 __pycache__/
 .git/
+logs/
