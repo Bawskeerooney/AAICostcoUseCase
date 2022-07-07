@@ -26,7 +26,7 @@ socketio_logger = logging.getLogger('socketio')
 socketio = SocketIO(app, logger=socketio_logger, engineio_logger=socketio_logger)
 SAMPLE_RATE = 25
 SESSION = time.strftime("%d%H%M%S", time.localtime())
-video_stream = edgeiq.FileVideoStream("bridge33.mov", play_realtime=True)
+video_stream = edgeiq.FileVideoStream("costcoVideo.mp4", play_realtime=True)
 
 @app.route('/')
 def index():
@@ -142,7 +142,7 @@ dash_app = dash.Dash(
 dash_app.layout = html.Div([
     WebSocket(
             id='input',
-            url='wss://analytics.alwaysai.co?projectId=c16fcb6f-571e-4b34-a678-e76860f3af7c&apiKey=u3zd2QZD-7kg9jWPwUsCeqNRVnx5bSyJF4~8p@T'
+            url='wss://analytics.alwaysai.co?projectId=2fc349e5-ec2c-4a8c-af07-994ed84b5706&apiKey=u3zd2QZD-7kg9jWPwUsCeqNRVnx5bSyJF4~8p@T'
         ),
     dcc.Tabs(id='tabs-example-graph', value='tab-2-example-graph', children=[
         dcc.Tab(
