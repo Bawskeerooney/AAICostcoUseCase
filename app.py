@@ -386,8 +386,8 @@ class CVClient(eventlet_threading.Thread):
     def run(self):
         print("Starting Up")
         global car_count
-        incoming_car_count = 0
-        outgoing_car_count = 0
+        lane_one_car_count = 0
+        lane_two_car_count = 0
         obj_detect = edgeiq.ObjectDetection(
                 "alwaysai/yolo_v3")
         obj_detect.load(engine=edgeiq.Engine.DNN)
@@ -437,29 +437,29 @@ class CVClient(eventlet_threading.Thread):
                 if has_duplicate != True:
                     filtered_predictions.append(item)
                     # Generate text to display on streamer
-            text = ["Model: {}".format(obj_detect.model_id)]
+            text = ["Model: {}".format(obj_detect.model_id)]    
             text.append(
                     "Inference time: {:1.3f} s".format(
                         results.duration))
             text.append("Objects:")
             objects = tracker.update(filtered_predictions)
-            incoming_traffic = zones.get_zone("incoming_traffic")
-            outgoing_traffic = zones.get_zone("outgoing_traffic")
-            print(incoming_traffic.get_results_for_zone(objects))
+            laneOne = zones.get_zone("laneOne")
+            laneTwo = zones.get_zone("laneTwo")
+            print(laneOne.get_results_for_zone(objects))
 
             for key, value in objects.items():
-                if incoming_traffic.check_object_detection_prediction_within_zone(value):
+                if laneOne.check_object_detection_prediction_within_zone(value):
                     if key not in objects_in_inzone:
-                        incoming_car_count += 1
+                        lane_one_car_count += 1
                         objects_in_inzone.append(key)
-                if outgoing_traffic.check_object_detection_prediction_within_zone(value):
+                if laneTwo.check_object_detection_prediction_within_zone(value):
                     if key not in objects_in_outzone:
-                        outgoing_car_count += 1
+                        lane_two_car_count += 1
                         objects_in_outzone.append(key)
-            text.append(f"Incoming Car Count: {incoming_car_count}")
-            text.append(f"Outgoing Car Count: {outgoing_car_count}")
-            frame = zones.markup_image_with_zones(frame, ['incoming_traffic'], show_labels=False, fill_zones=True, alpha=0.3)
-            frame = zones.markup_image_with_zones(frame, ['outgoing_traffic'], show_labels=False, color = (150,150,0), fill_zones=True, alpha=0.3)
+            text.append(f"Lane One Car Count: {lane_one_car_count}")
+            text.append(f"Lane Two Car Count: {lane_two_car_count}")
+            frame = zones.markup_image_with_zones(frame, ['laneOne'], show_labels=False, fill_zones=True, alpha=0.3)
+            frame = zones.markup_image_with_zones(frame, ['laneTwo'], show_labels=False, color = (150,150,0), fill_zones=True, alpha=0.3)
             frame = edgeiq.markup_image(
                     frame, filtered_predictions, show_labels=True,
                     show_confidences=False, colors=[(255,255,255)])
@@ -469,10 +469,10 @@ class CVClient(eventlet_threading.Thread):
 
             # enqueue the frames
             zone_dictionary = {}
-            zone_dictionary['incoming_traffic_cumulative'] = incoming_car_count
-            zone_dictionary['outgoing_traffic_cumulative'] = outgoing_car_count
-            zone_dictionary['incoming_traffic'] = len(incoming_traffic.get_results_for_zone(objects))
-            zone_dictionary['outgoing_traffic'] = len(outgoing_traffic.get_results_for_zone(objects))
+            zone_dictionary['lane_one_cumulative'] = lane_one_car_count
+            zone_dictionary['lane_two_cumulative'] = lane_two_car_count
+            zone_dictionary['laneOne'] = len(laneOne.get_results_for_zone(objects))
+            zone_dictionary['laneTwo'] = len(laneTwo.get_results_for_zone(objects))
             edgeiq.publish_analytics(zone_dictionary)
             self.all_frames.append(frame)
             if self.writer.write == True:
