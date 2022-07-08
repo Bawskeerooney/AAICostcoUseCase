@@ -388,6 +388,10 @@ class CVClient(eventlet_threading.Thread):
         global car_count
         lane_one_car_count = 0
         lane_two_car_count = 0
+        lane_three_car_count = 0
+        lane_four_car_count = 0
+        lane_five_car_count = 0
+
         obj_detect = edgeiq.ObjectDetection(
                 "alwaysai/yolo_v3")
         obj_detect.load(engine=edgeiq.Engine.DNN)
@@ -409,6 +413,11 @@ class CVClient(eventlet_threading.Thread):
         fps = edgeiq.FPS()
         objects_in_inzone = []
         objects_in_outzone = []
+        objects_in_laneOne = []
+        objects_in_laneTwo = []
+        objects_in_laneThree = []
+        objects_in_laneFour = []
+        objects_in_laneFive = []
 
         video_stream.start()
         # Allow Webcam to warm up
@@ -443,23 +452,48 @@ class CVClient(eventlet_threading.Thread):
                         results.duration))
             text.append("Objects:")
             objects = tracker.update(filtered_predictions)
+            """
             laneOne = zones.get_zone("laneOne")
             laneTwo = zones.get_zone("laneTwo")
+            laneThree = zones.get_zone("laneOne")
+            laneFour = zones.get_zone("laneOne")
+            laneFive = zones.get_zone("laneOne")
             print(laneOne.get_results_for_zone(objects))
+            """
+            
+            total_objects_in_zone = [objects_in_laneOne, objects_in_laneTwo, objects_in_laneThree, objects_in_laneFour, objects_in_laneFive]
+            lane_Names = ["laneOne", "laneTwo", "laneThree", "laneFour", "laneFive"]
+            lane_cumulative_names = ["lane_one_cumulative", "lane_two_cumulative", "lane_three_cumulative", "lane_four_cumulative", "lane_five_cumulative"]
+            lane_car_counts = [lane_one_car_count, lane_two_car_count, lane_three_car_count, lane_four_car_count, lane_five_car_count]
+            zone_dictionary = {}
+            for i in range(5):
+                lane = zones.get_zone(lane_Names[i])
+                for key, value in objects.items():
+                    if lane.check_object_detection_prediction_within_zone(value):
+                        if key not in total_objects_in_zone[i]:
+                            lane_car_counts[i] += 1
+                            total_objects_in_zone[i].append(key)
+                
+                zone_dictionary['lane_one_cumulative'] = lane_car_counts[0]
+                zone_dictionary[lane_Names[i]] = len(lane_Names[i].get_results_for_zone(objects))
+           
+                    
+                    """
+                    if laneTwo.check_object_detection_prediction_within_zone(value):
+                        if key not in objects_in_outzone:
+                            lane_two_car_count += 1
+                            objects_in_outzone.append(key)
+                    """
 
-            for key, value in objects.items():
-                if laneOne.check_object_detection_prediction_within_zone(value):
-                    if key not in objects_in_inzone:
-                        lane_one_car_count += 1
-                        objects_in_inzone.append(key)
-                if laneTwo.check_object_detection_prediction_within_zone(value):
-                    if key not in objects_in_outzone:
-                        lane_two_car_count += 1
-                        objects_in_outzone.append(key)
-            text.append(f"Lane One Car Count: {lane_one_car_count}")
-            text.append(f"Lane Two Car Count: {lane_two_car_count}")
-            frame = zones.markup_image_with_zones(frame, ['laneOne'], show_labels=False, fill_zones=True, alpha=0.3)
-            frame = zones.markup_image_with_zones(frame, ['laneTwo'], show_labels=False, color = (150,150,0), fill_zones=True, alpha=0.3)
+            text.append(f"Lane One Car Count: {lane_car_counts[0]}")
+            text.append(f"Lane Two Car Count: {lane_car_counts[1]}")
+            text.append(f"Lane Three Car Count: {lane_car_counts[2]}")
+            text.append(f"Lane Four Car Count: {lane_car_counts[3]}")
+            text.append(f"Lane Five Car Count: {lane_car_counts[4]}")
+            
+
+            #frame = zones.markup_image_with_zones(frame, ['laneOne'], show_labels=False, fill_zones=True, alpha=0.3)
+            frame = zones.markup_image_with_zones(frame, lane_Names, show_labels=False, color = (150,150,0), fill_zones=True, alpha=0.3)
             frame = edgeiq.markup_image(
                     frame, filtered_predictions, show_labels=True,
                     show_confidences=False, colors=[(255,255,255)])
@@ -468,11 +502,13 @@ class CVClient(eventlet_threading.Thread):
             text.append('\n')
 
             # enqueue the frames
+            """
             zone_dictionary = {}
             zone_dictionary['lane_one_cumulative'] = lane_one_car_count
             zone_dictionary['lane_two_cumulative'] = lane_two_car_count
             zone_dictionary['laneOne'] = len(laneOne.get_results_for_zone(objects))
             zone_dictionary['laneTwo'] = len(laneTwo.get_results_for_zone(objects))
+            """
             edgeiq.publish_analytics(zone_dictionary)
             self.all_frames.append(frame)
             if self.writer.write == True:
