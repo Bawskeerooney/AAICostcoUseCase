@@ -382,6 +382,22 @@ class CVClient(eventlet_threading.Thread):
         self.start()
         time.sleep(1)
         return self
+    """
+    @param objects (dictionary) From our Object Tracker.  Keys are the id of each object
+    values are the predictions of each object
+    @return 
+    """    
+    def average_time_for_lane(self):
+        #First obtain how to obtain time for an object.
+
+        #Then sort objects based on the zone they are in.  Use Zone object to get list of
+        #objects in a particular zone
+
+        #One you have the time of an object and the lane it populated take that group and 
+        #find the average time of that section. (Mean function).  With this you can find
+        #the total average as well
+        
+        return self
 
     def run(self):
         print("Starting Up")
@@ -461,7 +477,7 @@ class CVClient(eventlet_threading.Thread):
             print(laneOne.get_results_for_zone(objects))
             """
             
-            total_objects_in_zone = [objects_in_laneOne, objects_in_laneTwo, objects_in_laneThree, objects_in_laneFour, objects_in_laneFive]
+            objects_in_zone = [objects_in_laneOne, objects_in_laneTwo, objects_in_laneThree, objects_in_laneFour, objects_in_laneFive]
             lane_Names = ["laneOne", "laneTwo", "laneThree", "laneFour", "laneFive"]
             lane_cumulative_names = ["lane_one_cumulative", "lane_two_cumulative", "lane_three_cumulative", "lane_four_cumulative", "lane_five_cumulative"]
             lane_car_counts = [lane_one_car_count, lane_two_car_count, lane_three_car_count, lane_four_car_count, lane_five_car_count]
@@ -470,20 +486,20 @@ class CVClient(eventlet_threading.Thread):
                 lane = zones.get_zone(lane_Names[i])
                 for key, value in objects.items():
                     if lane.check_object_detection_prediction_within_zone(value):
-                        if key not in total_objects_in_zone[i]:
+                        if key not in objects_in_zone[i]:
                             lane_car_counts[i] += 1
-                            total_objects_in_zone[i].append(key)
+                            objects_in_zone[i].append(key)
                 
-                zone_dictionary['lane_one_cumulative'] = lane_car_counts[0]
-                zone_dictionary[lane_Names[i]] = len(lane_Names[i].get_results_for_zone(objects))
+                zone_dictionary[lane_cumulative_names[i]] = lane_car_counts[i]
+                zone_dictionary[lane_Names[i]] = len(lane.get_results_for_zone(objects))
            
                     
-                    """
-                    if laneTwo.check_object_detection_prediction_within_zone(value):
-                        if key not in objects_in_outzone:
-                            lane_two_car_count += 1
-                            objects_in_outzone.append(key)
-                    """
+                """
+                if laneTwo.check_object_detection_prediction_within_zone(value):
+                    if key not in objects_in_outzone:
+                        lane_two_car_count += 1
+                        objects_in_outzone.append(key)
+                """
 
             text.append(f"Lane One Car Count: {lane_car_counts[0]}")
             text.append(f"Lane Two Car Count: {lane_car_counts[1]}")
